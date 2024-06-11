@@ -26,8 +26,6 @@ function generateShortCode() {
 }
 
 
-
-// Endpoint to create a short URL
 app.post('/shorten', async (req, res) => {
   const { originalUrl } = req.body;
   const shortCode = generateShortCode();
@@ -45,13 +43,12 @@ app.post('/shorten', async (req, res) => {
   }
 });
 
-// Endpoint to redirect to the original URL
 app.get('/:shortCode', async (req, res) => {
   const { shortCode } = req.params;
 
   try {
     let params = [
-      { name: 'shortCode', type: sql.NVarChar, value: shortCode }
+      { name: 'shortCode', type: sql.NVarChar, value: shortCode}
     ];
     let result = await db.executeQuery('getLinkByShortCode', params);
     if (result.recordset.length > 0) {
