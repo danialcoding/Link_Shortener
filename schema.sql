@@ -6,7 +6,7 @@ BEGIN
         original_url NVARCHAR(2048),
         short_code NVARCHAR(10) UNIQUE,
         created_at DATETIME DEFAULT GETDATE(),
-        expires_at DATETIME
+        expired_at DATETIME
     );
 END;
 
@@ -100,5 +100,23 @@ BEGIN
             BEGIN
                 PRINT ''changes are not allowed on Log Table.'';
             END
+    ');
+END;
+
+
+-- Trigger to update expired_at when a link is visited
+IF NOT EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[dbo].[UpdateExpiresAt]'))
+BEGIN
+    EXEC('
+        CREATE TRIGGER UpdateExpiresAt
+        ON LinkVisits
+        AFTER INSERT
+        AS
+        BEGIN
+            UPDATE Links
+            SET expired_at = DATEADD(WEEK, 1, inserted.visited_at)
+            FROM inserted
+            WHERE Links.short_code = inserted.short_code;
+        END
     ');
 END;

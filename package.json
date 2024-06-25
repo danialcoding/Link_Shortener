@@ -14,6 +14,7 @@
     "express": "^4.19.2",
     "fs": "^0.0.1-security",
     "mssql": "^10.0.2",
+    "node-schedule": "^2.1.1",
     "shortid": "^2.2.16"
   }
 }

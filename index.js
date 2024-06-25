@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const db = require('./db');
 const sql = require('mssql');
 const crypto = require('crypto');
+const schedule = require('node-schedule');
 
 const app = express();
 const port = 3000;
@@ -20,6 +21,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
   }
 })();
 
+// Schedule a job to delete expired links every day at midnight
+schedule.scheduleJob('0 0 * * *', async () => {
+  await db.deleteExpiredLinks();
+});
+
 // Function to generate a short code
 function generateShortCode() {
   return crypto.randomBytes(3).toString('hex');
@@ -28,6 +34,12 @@ function generateShortCode() {
 
 app.post('/shorten', async (req, res) => {
   const { originalUrl } = req.body;
+
+  // Validate the URL format
+  if (!validator.isURL(originalUrl)) {
+    return res.status(400).send('Invalid URL format. Please provide a valid URL for shortening.');
+  }
+
   const shortCode = generateShortCode();
 
   try {
@@ -35,27 +47,35 @@ app.post('/shorten', async (req, res) => {
       { name: 'originalUrl', type: sql.NVarChar, value: originalUrl },
       { name: 'shortCode', type: sql.NVarChar, value: shortCode }
     ];
-    await db.executeQuery('insertLink', params);
-    res.status(201).send({ shortCode });
+    let result = await db.executeQuery('checkexist', params);
+
+    if (result.recordset.length > 0) {
+      res.status(404).send('URL has existed!');
+
+    } else {
+      await db.executeQuery('insertLink', params);
+      res.status(201).send({ shortCode });
+    }
   } catch (err) {
     console.error('Error inserting URL into database:', err);
     res.status(500).send('Server error');
   }
 });
 
+
+// Endpoint to redirect to the original URL
 app.get('/:shortCode', async (req, res) => {
   const { shortCode } = req.params;
 
   try {
     let params = [
-      { name: 'shortCode', type: sql.NVarChar, value: shortCode}
+      { name: 'shortCode', type: sql.NVarChar, value: shortCode }
     ];
     let result = await db.executeQuery('getLinkByShortCode', params);
     if (result.recordset.length > 0) {
-      const originalUrl = result.recordset[0].original_url;
-      // Log the visit
+
       await db.executeQuery('insertLinkVisit', params);
-      res.redirect(originalUrl);
+      res.json(result.recordset);
     } else {
       res.status(404).send('URL not found');
     }
@@ -64,6 +84,8 @@ app.get('/:shortCode', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
+
 
 // Dashboard endpoints
 

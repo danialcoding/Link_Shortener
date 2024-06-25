@@ -1,6 +1,7 @@
 // dbConfig.js
 const dbConfig = {
-    server: 'DANIAL\\SQLEXPRESS',
+    //server: 'DANIAL\\MSSQLSERVER01',
+    server: 'DANIAL',
     database: 'link_shortener',
     user: 'danial',
     password: 'KING.d@1382',
