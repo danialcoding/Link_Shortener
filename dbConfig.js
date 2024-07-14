@@ -1,10 +1,11 @@
 // dbConfig.js
 const dbConfig = {
     //server: 'DANIAL\\MSSQLSERVER01',
-    server: 'DANIAL',
+    //server: 'DANIAL',
+    server: 'DANIAL\\SQLEXPRESS',
     database: 'link_shortener',
     user: 'danial',
-    password: 'KING.d@1382',
+    password: '',
 
     options: {
         //encrypt: true, // Use this if you're on Windows Azure

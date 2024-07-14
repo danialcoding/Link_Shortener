@@ -23,10 +23,10 @@ SELECT
     Links.short_code,
     Links.created_at,
     CONCAT(
-        DATEDIFF(DAY, Links.created_at, Links.expired_at), ' Days, ',
-        DATEDIFF(HOUR, Links.created_at, Links.expired_at) % 24, ' Hours, ',
-        DATEDIFF(MINUTE, Links.created_at, Links.expired_at) % 60, ' Minutes, ',
-        DATEDIFF(SECOND, Links.created_at, Links.expired_at) % 60, ' Seconds'
+        DATEDIFF(DAY, Links.created_at, Links.expires_at), ' Days, ',
+        DATEDIFF(HOUR, Links.created_at, Links.expires_at) % 24, ' Hours, ',
+        DATEDIFF(MINUTE, Links.created_at, Links.expires_at) % 60, ' Minutes, ',
+        DATEDIFF(SECOND, Links.created_at, Links.expires_at) % 60, ' Seconds'
     ) AS RemainingTime,
     ISNULL(COUNT(LinkVisits.short_code), 0) AS visits_number
 FROM 
@@ -37,14 +37,14 @@ GROUP BY
     Links.original_url, 
     Links.short_code, 
     Links.created_at, 
-    Links.expired_at;
+    Links.expires_at;
 
 
 -- checkexist
 SELECT * FROM Links WHERE original_url = @originalUrl;
 
 -- insertLink
-INSERT INTO Links (original_url, short_code, created_at,expired_at) 
+INSERT INTO Links (original_url, short_code, created_at,expires_at) 
 VALUES (@originalUrl, @shortCode, GETDATE(),DATEADD(WEEK, 1, GETDATE()));
 
 -- getLinkByShortCode
@@ -55,7 +55,7 @@ INSERT INTO LinkVisits (short_code, visited_at) VALUES (@shortCode, GETDATE());
 
 -- deleteExpiredLinks
 DELETE FROM Links
-WHERE expired_at < GETDATE();
+WHERE expires_at < GETDATE();
 
 
 

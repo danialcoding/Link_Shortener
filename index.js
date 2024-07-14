@@ -4,6 +4,7 @@ const db = require('./db');
 const sql = require('mssql');
 const crypto = require('crypto');
 const schedule = require('node-schedule');
+const validator = require('validator');
 
 const app = express();
 const port = 3000;
